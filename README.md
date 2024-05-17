@@ -7,7 +7,7 @@ To implement a simple hotel booking manager in Java, as a microservice API. The 
 3.      A method to find all the bookings for a given guest. 
 
 
-#Guidance
+# Guidance
 1.      Use only in-memory data structures; do not use a database.  
 2.      Do not use any framework or libraries in your solution.  [ Used Spring Boot here]
 3.      Provide tests with your solution (you may use libraries for the tests).  
