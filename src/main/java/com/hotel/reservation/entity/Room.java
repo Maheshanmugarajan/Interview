@@ -6,6 +6,7 @@ public class Room {
 
 	private int roomsAvailable;
 	private LocalDate BookingDate;
+	private String allocatedRooms;
 
 	public Room(int roomsAvailable, LocalDate arrivalDate) {
 		this.roomsAvailable = roomsAvailable;
@@ -24,7 +25,15 @@ public class Room {
 		return roomsAvailable;
 	}
 
-	public LocalDate getBookingDate() {
-		return BookingDate;
+	public String  getBookingDate() {
+		return BookingDate.toString();
 	}
+
+	public String getAllocatedRooms() {
+		return allocatedRooms;
+	}
+
+	public void setAllocatedRooms(String allocatedRooms) {
+		this.allocatedRooms = allocatedRooms;
+	}	
 }

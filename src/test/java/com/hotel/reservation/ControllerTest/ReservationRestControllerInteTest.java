@@ -36,7 +36,7 @@ public class ReservationRestControllerInteTest {
 
     @Test
     public void save_reservation_success() throws Exception {
-        Reservation reservation=new Reservation("swara",1000.0, LocalDate.now(),LocalDate.now().plusDays(5),1);
+        Reservation reservation=new Reservation("Adam",1, LocalDate.now());
 
         when(reservationService.saveReservation(any())).thenReturn(Boolean.TRUE);
         mockMvc.perform(
@@ -50,7 +50,7 @@ public class ReservationRestControllerInteTest {
 
     @Test
     public void save_reservation_failed() throws Exception {
-        Reservation reservation=new Reservation("swara",1000.0, LocalDate.now(),LocalDate.now().plusDays(5),11);
+        Reservation reservation=new Reservation("Adam",1, LocalDate.now());
         when(reservationService.saveReservation(any())).thenReturn(Boolean.FALSE);
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/saveBooking")
@@ -64,8 +64,8 @@ public class ReservationRestControllerInteTest {
     public void get_reservation_by_guest() throws Exception {
 
         ArrayList<Reservation> reservations=new ArrayList<>();
-        reservations.add(new Reservation("vj",1000.0,LocalDate.now(),LocalDate.now().plusDays(5),1));
-        reservations.add(new Reservation("vj",2000.0,LocalDate.now(),LocalDate.now().plusDays(5),1));
+        reservations.add(new Reservation("Hellen",1,LocalDate.now()));
+        reservations.add(new Reservation("August",2,LocalDate.now()));
 
         when(reservationService.getReservationsForGuest("vj")).thenReturn(reservations);
 

@@ -1,6 +1,11 @@
 package com.hotel.reservation.ServiceTest;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,65 +19,61 @@ import com.hotel.reservation.repository.ReservationRep;
 import com.hotel.reservation.service.ReservationService;
 import com.hotel.reservation.service.ReservationServiceImpl;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 public class ReservationServiceTest {
-    @Mock
-    private ReservationRep reservationRepository;
-    ReservationService reservationService;
+	@Mock
+	private ReservationRep reservationRepository;
+	ReservationService reservationService;
 
-    @BeforeEach
-    void initUseCase() {
-        reservationService = new ReservationServiceImpl(reservationRepository);
-    }
-    @SuppressWarnings("deprecation")
-	@Test
-    public void savedrReservation_Success() {
-        Reservation reservation=new Reservation("swara",1000.0, LocalDate.now(),LocalDate.now().plusDays(5),1);
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(true);
-        boolean savedReservationStatus = reservationService.saveReservation(reservation);
-        assertThat(savedReservationStatus).isEqualTo(true);
-    }
-    @SuppressWarnings("deprecation")
-	@Test
-    public void savedrReservation_Failed() {
-        Reservation reservation=new Reservation("swara",1000.0, LocalDate.now(),LocalDate.now().plusDays(5),11);
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(false);
-        boolean savedReservationStatus = reservationService.saveReservation(reservation);
-        assertThat(savedReservationStatus).isEqualTo(false);
-    }
+	@BeforeEach
+	void initUseCase() {
+		reservationService = new ReservationServiceImpl(reservationRepository);
+	}
 
-    @SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")
 	@Test
-    public void getReservationsForGuest_success() {
-        Reservation reservation=new Reservation("swara",1000.0, LocalDate.now(),LocalDate.now().plusDays(5),1);
-        ArrayList<Reservation> sendReservations=new ArrayList<>();
-        sendReservations.add(reservation);
-        when(reservationRepository.getReservationsForGuest("swara")).thenReturn(sendReservations);
-        ArrayList<Reservation> reservations = reservationService.getReservationsForGuest("swara");
-        assertThat(reservations.get(0)).isEqualTo(reservation);
-    }
+	public void savedrReservation_Success() {
+		Reservation reservation = new Reservation("Adam", 1, LocalDate.now());
+		when(reservationRepository.save(any(Reservation.class))).thenReturn(true);
+		boolean savedReservationStatus = reservationService.saveReservation(reservation);
+		assertThat(savedReservationStatus).isEqualTo(true);
+	}
 
-    @SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")
 	@Test
-    public void getReservationsForGuest_failed() {
-        // providing knowledge
-        when(reservationRepository.getReservationsForGuest("swara")).thenReturn(null);
-        ArrayList<Reservation> reservations = reservationService.getReservationsForGuest("swara");
-        assertThat(reservations).isEqualTo(null);
-    }
+	public void savedrReservation_Failed() {
+		Reservation reservation = new Reservation("Adam", 1, LocalDate.now());
+		when(reservationRepository.save(any(Reservation.class))).thenReturn(false);
+		boolean savedReservationStatus = reservationService.saveReservation(reservation);
+		assertThat(savedReservationStatus).isEqualTo(false);
+	}
 
-    @SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")
 	@Test
-    public void getAvailableRoomsByDate_success() {
-        // providing knowledge
-        when(reservationRepository.getAvailableRoomsByDate(LocalDate.now())).thenReturn(new Room(5,LocalDate.now()));
-        Room room = reservationService.getAvailableRoomsByDate(LocalDate.now());
-        assertThat(room.getRoomsAvailable()).isEqualTo(5);
-    }
+	public void getReservationsForGuest_success() {
+		Reservation reservation = new Reservation("Adam", 1, LocalDate.now());
+		ArrayList<Reservation> sendReservations = new ArrayList<>();
+		sendReservations.add(reservation);
+		when(reservationRepository.getReservationsForGuest("Adam")).thenReturn(sendReservations);
+		ArrayList<Reservation> reservations = reservationService.getReservationsForGuest("Adam");
+		assertThat(reservations.get(0)).isEqualTo(reservation);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Test
+	public void getReservationsForGuest_failed() {
+		// providing knowledge
+		when(reservationRepository.getReservationsForGuest("swara")).thenReturn(null);
+		ArrayList<Reservation> reservations = reservationService.getReservationsForGuest("swara");
+		assertThat(reservations).isEqualTo(null);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Test
+	public void getAvailableRoomsByDate_success() {
+		// providing knowledge
+		when(reservationRepository.getAvailableRoomsByDate(LocalDate.now())).thenReturn(new Room(5, LocalDate.now()));
+		Room room = reservationService.getAvailableRoomsByDate(LocalDate.now());
+		assertThat(room.getRoomsAvailable()).isEqualTo(5);
+	}
 }

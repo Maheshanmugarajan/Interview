@@ -1,9 +1,18 @@
 package com.hotel.reservation.controller;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.hotel.reservation.entity.Reservation;
@@ -11,36 +20,29 @@ import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.RoomsNotAvailableException;
 import com.hotel.reservation.service.ReservationService;
 
-import javax.validation.Valid;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
-
-
 @RestController
 public class BookingController {
-    @Autowired
-    ReservationService reservationService;
+	@Autowired
+	ReservationService reservationService;
 
-    @GetMapping("/findRoom/{date}")
-    public Room getAvailableRoomsByDate(@PathVariable String date)
-    {
-        return reservationService.getAvailableRoomsByDate(LocalDate.parse(date));
-    }
+	@GetMapping("/findRoom/{date}")
+	public Room getAvailableRoomsByDate(@PathVariable String date) {
+		return reservationService.getAvailableRoomsByDate(LocalDate.parse(date));
+	}
 
-    @GetMapping("/findBooking/{guest}")
-    public ArrayList<Reservation> getReservationsForGuest(@PathVariable String guest)
-    {
-        return reservationService.getReservationsForGuest(guest);
-    }
+	@GetMapping("/findBooking/{guest}")
+	public ArrayList<Reservation> getReservationsForGuest(@PathVariable String guest) {
+		return reservationService.getReservationsForGuest(guest);
+	}
 
-    @PostMapping("/saveBooking")
-    public ResponseEntity<Object> BookRoom(@Valid @RequestBody Reservation reservation){
-        boolean success = reservationService.saveReservation(reservation);
-        if(!success){
-            throw new RoomsNotAvailableException("All rooms booked or bookings not Available for past date");
-        }
-        URI location= ServletUriComponentsBuilder.fromCurrentRequest().path("/{guest}").buildAndExpand(reservation.getGuest()).toUri();
-        return ResponseEntity.created(location).build();
-    }
+	@PostMapping("/saveBooking")
+	public ResponseEntity<Object> BookRoom(@Valid @RequestBody Reservation reservation) {
+		boolean success = reservationService.saveReservation(reservation);
+		if (!success)
+			throw new RoomsNotAvailableException("Current Room is not available OR All rooms booked");
+
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{guest}")
+				.buildAndExpand(reservation.getGuestName()).toUri();
+		return ResponseEntity.created(location).build();
+	}
 }

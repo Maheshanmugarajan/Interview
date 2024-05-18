@@ -26,18 +26,18 @@ public class ReservationRepoTest {
 		reservationRepository = new ReservationRepImpl();
 		reservationRepository.setRoomsCount(10);
 		ReservationRepImpl.existingReservationList
-				.add(new Reservation("Hendry", 1000.0, LocalDate.now(), LocalDate.now().plusDays(5), 1));
+				.add(new Reservation("Hendry", 1,LocalDate.now()));
 		ReservationRepImpl.existingReservationList
-				.add(new Reservation("William", 2000.0, LocalDate.now(), LocalDate.now().plusDays(5), 1));
+				.add(new Reservation("William", 2, LocalDate.now()));
 		ReservationRepImpl.existingReservationList
-				.add(new Reservation("Peter", 3000.0, LocalDate.now(), LocalDate.now().plusDays(5), 1));
+				.add(new Reservation("Peter", 3,LocalDate.now()));
 		ReservationRepImpl.rooms.put(LocalDate.now().toString(), 7);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Test
 	void save_success() {
-		Reservation reservation = new Reservation("vj", 1000.0, LocalDate.now(), LocalDate.now().plusDays(5), 1);
+		Reservation reservation = new Reservation("Adam", 1,LocalDate.now());
 		boolean status = reservationRepository.save(reservation);
 		assertThat(status).isEqualTo(true);
 	}
@@ -45,8 +45,7 @@ public class ReservationRepoTest {
 	@SuppressWarnings("deprecation")
 	@Test
 	void save_failed() {
-		Reservation reservation = new Reservation("vj", 1000.0, LocalDate.parse("2023-03-21"),
-				LocalDate.now().plusDays(5), 1);
+		Reservation reservation = new Reservation("vj", 1,LocalDate.parse("2023-03-21"));
 		boolean status = reservationRepository.save(reservation);
 		assertThat(status).isEqualTo(false);
 	}
@@ -70,9 +69,9 @@ public class ReservationRepoTest {
 	@SuppressWarnings("deprecation")
 	@Test
 	void findRoomsByDate_success() {
-		LocalDate localDate = LocalDate.now().plusDays(10);
+		LocalDate localDate = LocalDate.now();
 		Room room = reservationRepository.getAvailableRoomsByDate(localDate);
-		assertThat(room.getRoomsAvailable()).isGreaterThanOrEqualTo(10);
+		assertThat(room.getRoomsAvailable()).isGreaterThanOrEqualTo(1);
 	}
 
 	@SuppressWarnings("deprecation")
