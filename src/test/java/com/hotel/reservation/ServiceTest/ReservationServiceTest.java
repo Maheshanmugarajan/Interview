@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.repository.ReservationRep;
@@ -34,18 +35,18 @@ public class ReservationServiceTest {
 	@Test
 	public void savedrReservation_Success() {
 		Reservation reservation = new Reservation("Adam", 1, LocalDate.now());
-		when(reservationRepository.save(any(Reservation.class))).thenReturn(true);
-		boolean savedReservationStatus = reservationService.saveReservation(reservation);
-		assertThat(savedReservationStatus).isEqualTo(true);
+		when(reservationRepository.save(any(Reservation.class))).thenReturn(ReservationStatus.BOOK_SUCCESS);
+		ReservationStatus savedReservationStatus = reservationService.saveReservation(reservation);
+		assertThat(savedReservationStatus).isEqualTo(ReservationStatus.BOOK_SUCCESS);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Test
 	public void savedrReservation_Failed() {
 		Reservation reservation = new Reservation("Adam", 1, LocalDate.now());
-		when(reservationRepository.save(any(Reservation.class))).thenReturn(false);
-		boolean savedReservationStatus = reservationService.saveReservation(reservation);
-		assertThat(savedReservationStatus).isEqualTo(false);
+		when(reservationRepository.save(any(Reservation.class))).thenReturn(ReservationStatus.BOOK_FAILED);
+		ReservationStatus savedReservationStatus = reservationService.saveReservation(reservation);
+		assertThat(savedReservationStatus).isEqualTo(ReservationStatus.BOOK_FAILED);
 	}
 
 	@SuppressWarnings("deprecation")

@@ -3,6 +3,7 @@ package com.hotel.reservation.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 
@@ -13,6 +14,6 @@ public interface ReservationService {
 
 	public ArrayList<Reservation> getReservationsForGuest(String guest);
 
-	public boolean saveReservation(Reservation currentReservation);
+	public ReservationStatus saveReservation(Reservation currentReservation);
 
 }

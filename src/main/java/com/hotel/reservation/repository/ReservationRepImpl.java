@@ -2,30 +2,25 @@ package com.hotel.reservation.repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 
 @Repository
 public class ReservationRepImpl implements ReservationRep {
 
-	/*
-	 * Made below two variables public to access in Unit tests as no DB is used Due
-	 * to time constraint didn't create a clone of below ArrayList and use that
-	 * clone using the setter in Unit testing.
-	 *
-	 */
-	public static List<Reservation> existingReservationList = new ArrayList<Reservation>();
+	public static List<Reservation> existingReservationList = new ArrayList<>();
 	public static HashMap<String, Integer> rooms = new HashMap<>();
 
 	private static int roomsCount;
@@ -46,105 +41,77 @@ public class ReservationRepImpl implements ReservationRep {
 
 	@Override
 	public ArrayList<Reservation> getReservationsForGuest(String guestName) {
-		return (ArrayList<Reservation>) existingReservationList.stream()
+		return existingReservationList.stream()
 				.filter(reservation -> reservation.getGuestName().equalsIgnoreCase(guestName))
-				.collect(Collectors.toList());
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	@Override
 	public Room getAvailableRoomsByDate(LocalDate date) {
 		if (!date.isBefore(LocalDate.now())) {
-			Map<String, Integer> counts = countOccurrences(rooms);
-			Room availability = new Room((roomsCount - counts.getOrDefault(date.toString(), roomsCount)), date);
-			availability.setAllocatedRooms(findRoomList(rooms));
-			return ((roomsCount - counts.getOrDefault(date.toString(), roomsCount)) < 10 ? availability
-					: new Room(0, date));
+			Map<String, Integer> totalRoomOnBookedDate = countOccurrences(rooms);
+			Map<String, String> totalRoomByBookedDate = findBookedRooms(rooms);
+			Room availability = new Room((roomsCount - totalRoomOnBookedDate.getOrDefault(date.toString(), 0)), date);
+			availability.setAllocatedRooms(totalRoomByBookedDate.getOrDefault(date.toString(), "NONE"));
+			return ((roomsCount - totalRoomOnBookedDate.getOrDefault(date.toString(), roomsCount)) < 10 ? availability
+					: new Room(roomsCount, date));
 		}
 		return null;
 	}
 
 	@Override
-	public boolean save(Reservation reservation) {
-		if (getRoomAvailablity(reservation)) {
-			return BookRoom(reservation);
-		}
-		return false;
-	}
-
-	public boolean getRoomAvailablity(Reservation reservation) {
-		int i = 0, j = 0;
+	public ReservationStatus save(@Valid Reservation reservation) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate startDate = LocalDate.parse(reservation.getCheckIn(), formatter);
-		int stayDays = ((int) ChronoUnit.DAYS.between(LocalDate.now(), startDate) + 1);
-		if (rooms == null)
-			return true;
-
-		while (i < stayDays) {
-			startDate.plusDays(i);
-			if (!rooms.containsKey((startDate.toString() + reservation.getRoomNumber()))) {
-				if (rooms.size() < roomsCount) {
-					j++;
-				} else {
-					return false;
-				}
-			}
-			i++;
+		ReservationStatus roomStatus = getRoomAvailability(reservation, startDate);		
+		if (ReservationStatus.BOOK_SUCCESS.equals(roomStatus)) {
+			return bookRoom(reservation, startDate);
+		}else {
+			return roomStatus;
 		}
-		if (i == j) {
-			return true;
-		}
-		return false;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public boolean BookRoom(Reservation reservation) {
-		int i = 0;
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate startDate = LocalDate.parse(reservation.getCheckIn(), formatter);
+	public ReservationStatus getRoomAvailability(Reservation reservation, LocalDate startDate) {
+		return calculateAvailability(startDate, reservation.getRoomNumber());
+	}
+
+	private ReservationStatus calculateAvailability(LocalDate startDate, int roomNumber) {
+		long availableCount = startDate.datesUntil(startDate.plusDays(1))
+				.filter(date -> !rooms.containsKey(startDate.toString() + roomNumber)).count();
+		if (availableCount == 0 && rooms.size() + availableCount <= roomsCount)
+			return ReservationStatus.ROOM_NOT_AVAILABLE;
+
+		if (!(availableCount == 1 && rooms.size() + availableCount <= roomsCount))
+			return ReservationStatus.ROOM_FULL_BOOKED;
+		else
+			return ReservationStatus.BOOK_SUCCESS;
+	}
+
+	public ReservationStatus bookRoom(Reservation reservation, LocalDate startDate) {
 		if (startDate.isBefore(LocalDate.now())) {
-			return false;
+			return ReservationStatus.BOOK_DATE_PAST;
 		}
-		int stayDays = ((int) ChronoUnit.DAYS.between(LocalDate.now(), startDate) + 1);
-		HashMap<String, Integer> tempRooms = new HashMap();
-		while (i < stayDays) {
-			if (i > 0) {
-				startDate = startDate.plusDays(1);
-			}
-			if (!rooms.containsKey((startDate.toString() + reservation.getRoomNumber()))) {
-				if (rooms.size() <= roomsCount)
-					tempRooms.put((startDate.toString() + reservation.getRoomNumber()), reservation.getRoomNumber());
-			} else {
-				return false;
-			}
-			i++;
+		Map<String, Integer> tempRooms = startDate.datesUntil(startDate.plusDays(1))
+				.filter(date -> !rooms.containsKey(startDate.toString() + reservation.getRoomNumber()))
+				.limit(roomsCount - rooms.size())
+				.collect(Collectors.toMap(date -> startDate.toString() + reservation.getRoomNumber(),
+						date -> reservation.getRoomNumber()));
+
+		if (tempRooms.size() == 1) {
+			rooms.putAll(tempRooms);
+			existingReservationList.add(reservation);
+			return ReservationStatus.BOOK_SUCCESS;
 		}
-		if (i == tempRooms.size()) {
-			try {
-				rooms.putAll(tempRooms);
-				existingReservationList.add(reservation);
-			} catch (Exception e) {
-				return false;
-			}
-			return true;
-		}
-		return false;
+		return ReservationStatus.BOOK_FAILED;
 	}
 
 	public static Map<String, Integer> countOccurrences(HashMap<String, Integer> map) {
-		Map<String, Integer> counts = new HashMap<>();
-		for (Map.Entry<String, Integer> entry : map.entrySet()) {
-			String key = (entry.getKey()).substring(0, 10);
-			int count = counts.getOrDefault(key, 0);
-			counts.put(key, count + 1);
-		}
-		return counts;
+		return map.keySet().stream()
+				.collect(Collectors.groupingBy(s -> s.substring(0, 10), Collectors.reducing(0, e -> 1, Integer::sum)));
 	}
 
-	private String findRoomList(HashMap<String, Integer> map) {
-		List<Integer> roomlist = new ArrayList<>();
-		for (Map.Entry<String, Integer> entry : map.entrySet()) {
-			roomlist.add(entry.getValue());
-		}
-		return roomlist.stream().map(Object::toString).collect(Collectors.joining(", "));
+	private static Map<String, String> findBookedRooms(HashMap<String, Integer> map) {
+		return map.entrySet().stream().collect(Collectors.groupingBy(entry -> entry.getKey().substring(0, 10),
+				Collectors.mapping(entry -> entry.getValue().toString(), Collectors.joining(","))));
 	}
 }

@@ -3,6 +3,7 @@ package com.hotel.reservation.repository;
 import java.time.LocalDate;
 import java.util.Collection;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 
@@ -12,7 +13,7 @@ public interface ReservationRep {
 
 	public Room getAvailableRoomsByDate(LocalDate date);
 
-	boolean save(Reservation reservation);
+	ReservationStatus save(Reservation reservation);
 
 	void setRoomsCount(int i);
 

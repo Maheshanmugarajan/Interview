@@ -2,18 +2,10 @@ package com.hotel.reservation.entity;
 
 import java.time.LocalDate;
 
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.Size;
-
 public class Reservation {
 
-	@Size(min = 2, message = "The guest name is too small")
 	private String guestName;
-
-	@Size(min = 1, message = "Minimum one room should be allocate")
 	private int roomNumber;
-
-	@FutureOrPresent(message = "Booking Date should be current date or future dates")
 	private LocalDate checkIn;
 
 	public Reservation() {
@@ -41,7 +33,7 @@ public class Reservation {
 		this.roomNumber = roomNumber;
 	}
 
-	public String  getCheckIn() {
+	public String getCheckIn() {
 		return checkIn.toString();
 	}
 

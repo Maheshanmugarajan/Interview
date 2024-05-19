@@ -2,6 +2,7 @@ package com.hotel.reservation.ControllerTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.controller.BookingController;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
@@ -38,7 +39,7 @@ public class ReservationRestControllerInteTest {
     public void save_reservation_success() throws Exception {
         Reservation reservation=new Reservation("Adam",1, LocalDate.now());
 
-        when(reservationService.saveReservation(any())).thenReturn(Boolean.TRUE);
+        when(reservationService.saveReservation(any())).thenReturn(ReservationStatus.BOOK_SUCCESS);
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/saveBooking")
                                 .content(asJsonString(reservation))
@@ -51,7 +52,7 @@ public class ReservationRestControllerInteTest {
     @Test
     public void save_reservation_failed() throws Exception {
         Reservation reservation=new Reservation("Adam",1, LocalDate.now());
-        when(reservationService.saveReservation(any())).thenReturn(Boolean.FALSE);
+        when(reservationService.saveReservation(any())).thenReturn(ReservationStatus.BOOK_FAILED);
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/saveBooking")
                                 .content(asJsonString(reservation))

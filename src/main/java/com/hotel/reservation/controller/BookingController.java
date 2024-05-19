@@ -4,8 +4,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.RoomsNotAvailableException;
@@ -36,10 +35,10 @@ public class BookingController {
 	}
 
 	@PostMapping("/saveBooking")
-	public ResponseEntity<Object> BookRoom(@Valid @RequestBody Reservation reservation) {
-		boolean success = reservationService.saveReservation(reservation);
-		if (!success)
-			throw new RoomsNotAvailableException("Current Room is not available OR All rooms booked");
+	public ResponseEntity<Object> BookRoom(@RequestBody Reservation reservation) {
+		ReservationStatus status = reservationService.saveReservation(reservation);
+		if (!ReservationStatus.BOOK_SUCCESS.equals(status))
+			throw new RoomsNotAvailableException(status.getStatus());
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{guest}")
 				.buildAndExpand(reservation.getGuestName()).toUri();

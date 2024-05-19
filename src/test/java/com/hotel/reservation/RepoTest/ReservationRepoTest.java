@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hotel.booking.constant.ReservationStatus;
 import com.hotel.reservation.entity.Reservation;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.repository.ReservationRep;
@@ -38,16 +39,16 @@ public class ReservationRepoTest {
 	@Test
 	void save_success() {
 		Reservation reservation = new Reservation("Adam", 1,LocalDate.now());
-		boolean status = reservationRepository.save(reservation);
-		assertThat(status).isEqualTo(true);
+		ReservationStatus status = reservationRepository.save(reservation);
+		assertThat(status).isEqualTo(ReservationStatus.BOOK_SUCCESS);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Test
 	void save_failed() {
-		Reservation reservation = new Reservation("vj", 1,LocalDate.parse("2023-03-21"));
-		boolean status = reservationRepository.save(reservation);
-		assertThat(status).isEqualTo(false);
+		Reservation reservation = new Reservation("vj", 1,LocalDate.parse("2024-04-22"));
+		ReservationStatus status = reservationRepository.save(reservation);
+		assertThat(status).isEqualTo(ReservationStatus.BOOK_DATE_PAST);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -76,7 +77,7 @@ public class ReservationRepoTest {
 
 	@SuppressWarnings("deprecation")
 	void findRoomsByDate_failed() {
-		Room room = reservationRepository.getAvailableRoomsByDate(LocalDate.parse("2023-03-22"));
+		Room room = reservationRepository.getAvailableRoomsByDate(LocalDate.parse("2024-04-22"));
 		assertThat(room).isNull();
 	}
 
